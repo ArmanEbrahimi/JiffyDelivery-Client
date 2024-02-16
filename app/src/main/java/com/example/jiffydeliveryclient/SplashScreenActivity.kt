@@ -72,19 +72,41 @@ class SplashScreenActivity : AppCompatActivity() {
         listener = FirebaseAuth.AuthStateListener { myFirebaseAuth ->
             val user = myFirebaseAuth.currentUser
             var firstName: String? = null
+            if(user != null){
+                FirebaseDatabase.getInstance().reference.child(Constants.CLIENT_INFO_REF)
+                    .child(user!!.uid).addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            firstName = snapshot.getValue(ClientModel::class.java)?.firstName
+                            Log.d("firstName", firstName!!)
+                            handleWelcomeMessage(user, firstName)
+                        }
 
-            FirebaseDatabase.getInstance().reference.child(Constants.CLIENT_INFO_REF)
-                .child(user!!.uid).addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        firstName = snapshot.getValue(ClientModel::class.java)?.firstName
-                        Log.d("firstName", firstName!!)
-                        handleWelcomeMessage(user, firstName)
+                        override fun onCancelled(error: DatabaseError) {
+                            // Handle errors here
+                        }
+                    })
+                FirebaseMessaging.getInstance()
+                    .token
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            val token = task.result
+                            UserUtils.updateToken(this@SplashScreenActivity, token)
+                            Log.d("TOKEN", token)
+                        } else {
+                            Toast.makeText(
+                                this@SplashScreenActivity,
+                                "Failed to get FCM token ${task.exception?.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
+                checkUserFromFirebase()
 
-                    override fun onCancelled(error: DatabaseError) {
-                        // Handle errors here
-                    }
-                })
+            }else{
+                showLoginLayout()
+            }
+
+
         }
     }
 

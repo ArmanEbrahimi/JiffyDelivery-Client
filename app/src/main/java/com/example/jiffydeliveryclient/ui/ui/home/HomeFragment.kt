@@ -2,6 +2,7 @@ package com.example.jiffydeliveryclient.ui.ui.home
 
 
 import android.Manifest
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.content.res.Resources
@@ -9,12 +10,14 @@ import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
+import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.LinearInterpolator
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -51,6 +54,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
@@ -72,6 +76,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import org.json.JSONObject
 import java.io.IOException
 import java.util.Arrays
 import java.util.Locale
@@ -100,6 +105,17 @@ class HomeFragment : Fragment(), OnMapReadyCallback, FirebaseCourierInfoListener
 
     val compositeDisposable = CompositeDisposable()
     private lateinit var googleApi: GoogleAPI
+
+    //moving marker
+//    var polylineList:MutableList<LatLng>? = null
+//    var handler: Handler? = null
+//    var index : Int = 0
+//    var next :Int = 0
+//    var v : Float = 0.0f
+//    var lat : Double = 0.0
+//    var lng : Double = 0.0
+//    var start : LatLng? = null
+//    var end : LatLng? = null
 
     //Listener
     private lateinit var firebaseCourierInfoListener: FirebaseCourierInfoListener
@@ -466,16 +482,14 @@ class HomeFragment : Fragment(), OnMapReadyCallback, FirebaseCourierInfoListener
             }
     }
 
-    @SuppressLint("CheckResult")
     private fun addCourierMarker() {
         if (Constants.couriersFound.size > 0) {
-
-            Observable.fromIterable(Constants.couriersFound.keys)
+            Log.d("couriers size", Constants.couriersFound.size.toString())
+            var disposable= Observable.fromIterable(Constants.couriersFound.keys)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ key: String? ->
                     findCourierByKey(Constants.couriersFound[key])
-
                 },
                     { t: Throwable? ->
                         Snackbar.make(requireView(), t?.message!!, Snackbar.LENGTH_LONG).show()
@@ -492,7 +506,6 @@ class HomeFragment : Fragment(), OnMapReadyCallback, FirebaseCourierInfoListener
         }
     }
 
-    @SuppressLint("RestrictedApi")
     private fun findCourierByKey(courierGeoModel: CourierGeoModel?) {
 
         FirebaseDatabase.getInstance()
@@ -524,10 +537,11 @@ class HomeFragment : Fragment(), OnMapReadyCallback, FirebaseCourierInfoListener
         if (!Constants.markerList.containsKey(courierGeoModel?.key)) {
             Log.d("marker","1")
             addMarker(courierGeoModel!!)
-        } else {
-            addMarker(courierGeoModel!!)
-            Log.d("marker","2")
         }
+//        else {
+//            addMarker(courierGeoModel!!)
+//            Log.d("marker","2")
+//        }
 
 
 
@@ -535,7 +549,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback, FirebaseCourierInfoListener
             val courierLocation = FirebaseDatabase.getInstance()
                 .getReference(Constants.COURIERS_LOCATION_REFERENCE)
                 .child(cityName)
-                .child(courierGeoModel.key!!)
+                .child(courierGeoModel!!.key!!)
             courierLocation.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (!snapshot.hasChildren()) {
@@ -551,24 +565,34 @@ class HomeFragment : Fragment(), OnMapReadyCallback, FirebaseCourierInfoListener
                         val animationModel = AnimationModel(false, geoQueryModel!!)
 
                         if (Constants.markerList.get(courierGeoModel.key) != null) {
+                            if (Constants.couriersSubscribe.contains(courierGeoModel.key)){
+                                val marker = Constants.markerList.get(courierGeoModel.key)
 
-                            val marker = Constants.markerList.get(courierGeoModel.key)
-                            val oldPosition = Constants.couriersSubscribe.get(courierGeoModel.key)
+                                val oldPosition = Constants.couriersSubscribe.get(courierGeoModel.key)
 
-                            val from = StringBuilder()
-                                .append(oldPosition?.geoQueryModel?.l?.get(0))
-                                .append(",")
-                                .append(oldPosition?.geoQueryModel?.l?.get(1))
-                                .toString()
+                                val from = StringBuilder()
+                                    .append(oldPosition?.geoQueryModel?.l?.get(0))
+                                    .append(",")
+                                    .append(oldPosition?.geoQueryModel?.l?.get(1))
+                                    .toString()
 
-                            val to = StringBuilder()
-                                .append(animationModel.geoQueryModel.l?.get(0))
-                                .append(",")
-                                .append(animationModel.geoQueryModel.l?.get(1))
-                                .toString()
+                                val to = StringBuilder()
+                                    .append(animationModel.geoQueryModel.l?.get(0))
+                                    .append(",")
+                                    .append(animationModel.geoQueryModel.l?.get(1))
+                                    .toString()
 
-                        } else {
-                            Constants.couriersSubscribe.put(courierGeoModel.key!!, animationModel)
+                                moveMarkerAnimation(
+                                    courierGeoModel.key!!,
+                                    animationModel,
+                                    marker,
+                                    from,
+                                    to
+                                )
+                            }else {
+                                Constants.couriersSubscribe.put(courierGeoModel.key!!, animationModel)
+                            }
+
                         }
                     }
                 }
@@ -580,6 +604,94 @@ class HomeFragment : Fragment(), OnMapReadyCallback, FirebaseCourierInfoListener
             })
         }
     }
+    //
+    private fun moveMarkerAnimation(
+        key: String,
+        newData: AnimationModel,
+        marker: Marker?,
+        from: String,
+        to: String
+    ) {
+
+        if (!newData.isRun) {
+
+            //Request API
+            compositeDisposable.add(googleApi.getDirections(
+                "driving",
+                "less_driving",
+                from, to,
+                getString(R.string.api_key)
+            )
+            !!.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { returnResult ->
+                    Log.d("API_RETURN", returnResult)
+                    try {
+
+                        val jsonObject = JSONObject(returnResult)
+                        val jsonArray = jsonObject.getJSONArray("routes")
+                        for (i in 0 until jsonArray.length()) {
+                            val route = jsonArray.getJSONObject(i)
+                            val poly = route.getJSONObject("overview_polyline")
+                            val polyLine = poly.getString("points")
+                            newData.polyLineList = Constants.decodePoly(polyLine)
+                        }
+
+                        //Moving
+                        newData.index = -1
+                        newData.next = 1
+
+                        val runnable = object : Runnable {
+                            override fun run() {
+                                if (newData.polyLineList?.size != null) {
+                                    if (newData.polyLineList?.size!! > 1) {
+                                        if (newData.index < newData.polyLineList!!.size - 2) {
+                                            newData.index++
+                                            newData.next = newData.index + 1
+                                            newData.start = newData.polyLineList!![newData.index]
+                                            newData.end = newData.polyLineList!![newData.next]
+
+                                            //marker!!.remove()
+                                            val valueAnimator = ValueAnimator.ofInt(0, 1)
+                                            valueAnimator.duration = 3000
+                                            valueAnimator.interpolator = LinearInterpolator()
+                                            valueAnimator.addUpdateListener { value ->
+                                                newData.v = value.animatedFraction
+                                                newData.lat =
+                                                    newData.v * newData.end!!.latitude + (1 - newData.v) * newData.start!!.latitude
+                                                newData.lng =
+                                                    newData.v * newData.end!!.longitude + (1 - newData.v) * newData.start!!.longitude
+                                                val newPos = LatLng(newData.lat, newData.lng)
+                                                marker!!.position = newPos
+                                                marker.setAnchor(0.5f, 0.5f)
+                                                marker.rotation =
+                                                    Constants.getBearing(newData.start!!, newPos)
+                                            }
+                                            valueAnimator.start()
+                                        }
+
+                                    }
+
+                                    if (newData.index < newData.polyLineList!!.size - 2) {
+                                        newData.handler!!.postDelayed(this, 1500)
+                                    } else if (newData.index < newData.polyLineList!!.size - 1) {
+                                        newData.isRun = false
+                                        Constants.couriersSubscribe.put(key, newData)
+                                    }
+                                }
+                            }
+                        }
+
+                        newData.handler!!.postDelayed(runnable, 1500)
+
+                    } catch (e: Exception) {
+                        Snackbar.make(requireView(), e.message!!, Snackbar.LENGTH_LONG).show()
+                    }
+                }
+            )
+        }
+    }
+
 
 
 
