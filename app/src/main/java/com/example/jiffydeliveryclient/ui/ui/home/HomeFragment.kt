@@ -494,30 +494,12 @@ class HomeFragment : Fragment(), OnMapReadyCallback, FirebaseCourierInfoListener
 
     @SuppressLint("RestrictedApi")
     private fun findCourierByKey(courierGeoModel: CourierGeoModel?) {
-        var child = FirebaseDatabase.getInstance()
-            .getReference(Constants.COURIER_INFO_REFERENCE)
-            .child(courierGeoModel?.key!!)
-        var path = child.path.toString()
-        child.addValueEventListener(object :ValueEventListener{
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.hasChildren()){
-                    Log.d("milo","i am called")
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.d("milo","I am not called")
-            }
-
-        })
 
         FirebaseDatabase.getInstance()
             .getReference(Constants.COURIER_INFO_REFERENCE)
             .child(courierGeoModel?.key!!)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    Log.d("snap",snapshot.getValue().toString())
-
                     if (snapshot.hasChildren()) {
                         courierGeoModel.courierInfoModel =
                             (snapshot.getValue(CourierInfoModel::class.java))
