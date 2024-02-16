@@ -23,11 +23,13 @@ import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.getValue
 import com.google.firebase.messaging.FirebaseMessaging
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Completable
@@ -50,7 +52,7 @@ class SplashScreenActivity : AppCompatActivity() {
         init()
 
     }
-    private fun init(){
+    private fun init() {
         getResult =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 val response = IdpResponse.fromResultIntent(result.data)
@@ -67,35 +69,51 @@ class SplashScreenActivity : AppCompatActivity() {
             AuthUI.IdpConfig.PhoneBuilder().build(),
             AuthUI.IdpConfig.GoogleBuilder().build()
         )
-        listener = FirebaseAuth.AuthStateListener { myFirebaseAuth->
+        listener = FirebaseAuth.AuthStateListener { myFirebaseAuth ->
             val user = myFirebaseAuth.currentUser
-            if (user != null) {
-                Toast.makeText(
-                    this@SplashScreenActivity,
-                    "Welcome: " + user.uid,
-                    Toast.LENGTH_SHORT
-                ).show()
-                FirebaseMessaging.getInstance()
-                    .token
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            val token = task.result
-                            UserUtils.updateToken(this@SplashScreenActivity, token)
-                            Log.d("TOKEN", token)
-                        } else {
-                            Toast.makeText(
-                                this@SplashScreenActivity,
-                                "Failed to get FCM token ${task.exception?.message}",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-                checkUserFromFirebase()
-            } else {
-                showLoginLayout()
-            }
-        }
+            var firstName: String? = null
 
+            FirebaseDatabase.getInstance().reference.child(Constants.CLIENT_INFO_REF)
+                .child(user!!.uid).addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        firstName = snapshot.getValue(ClientModel::class.java)?.firstName
+                        Log.d("firstName", firstName!!)
+                        handleWelcomeMessage(user, firstName)
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        // Handle errors here
+                    }
+                })
+        }
+    }
+
+    private fun handleWelcomeMessage(user: FirebaseUser, firstName: String?) {
+        if (user != null) {
+            Toast.makeText(
+                this@SplashScreenActivity,
+                "Welcome: $firstName",
+                Toast.LENGTH_SHORT
+            ).show()
+            FirebaseMessaging.getInstance()
+                .token
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        val token = task.result
+                        UserUtils.updateToken(this@SplashScreenActivity, token)
+                        Log.d("TOKEN", token)
+                    } else {
+                        Toast.makeText(
+                            this@SplashScreenActivity,
+                            "Failed to get FCM token ${task.exception?.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            checkUserFromFirebase()
+        } else {
+            showLoginLayout()
+        }
     }
     private fun checkUserFromFirebase() {
         clientInfoRef.child(FirebaseAuth.getInstance().currentUser!!.uid)
