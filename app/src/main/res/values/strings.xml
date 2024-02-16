@@ -19,4 +19,22 @@
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
     <string name="title_activity_maps">MapsActivity</string>
+    <string name="courier_not_found">\"Courier not found\"</string>
+    <string name="welcome">Good afternoon</string>
+    <string name="choose_place">Choose a saved place</string>
+    <string name="api_key">AIzaSyAMnl4EXQrDVAiJqMAcuNW7v0RS5qHTQXE</string>
+    <string name="permission_required">Permission for location required</string>
+    <string name="menu_exit">Sing out</string>
+    <string name="pay_by_cash">Pay by Cash</string>
+    <string name="confirm_courier">Confirm Courier</string>
+    <string name="confirm_pickup">Confirm Pickup\n</string>
+    <string name="finding_your_rider">Find Your Courier\n</string>
+    <string name="send_request_to_courier_failed">Send request to the courier failed</string>
+    <string name="token_not_found">token not found</string>
+    <string name="couriers_not_found">Courier Not Found</string>
+    <string name="meet_courier_here">Meet the courier here</string>
+    <string name="city_name_not_found">City Not Found</string>
+    <string name="key_not_found">Key Not Found</string>
+
+
 </resources>
