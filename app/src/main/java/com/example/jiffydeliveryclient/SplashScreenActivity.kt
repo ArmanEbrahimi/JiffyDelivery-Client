@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
@@ -16,8 +17,10 @@ import androidx.appcompat.app.AlertDialog
 import com.example.jiffydeliveryclient.model.ClientModel
 import com.example.jiffydeliveryclient.ui.HomeActivity
 import com.example.jiffydeliveryclient.utils.Constants
+import com.example.jiffydeliveryclient.utils.UserUtils
 import com.firebase.ui.auth.AuthMethodPickerLayout
 import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.auth.IdpResponse
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -25,6 +28,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.messaging.FirebaseMessaging
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Completable
 import java.util.Arrays
@@ -45,16 +49,17 @@ class SplashScreenActivity : AppCompatActivity() {
 
         init()
 
-        getResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result->
-            if (result.resultCode == Activity.RESULT_OK){
-
-            }
-        }
-
-
-
     }
     private fun init(){
+        getResult =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                val response = IdpResponse.fromResultIntent(result.data)
+                if (result.resultCode == Activity.RESULT_OK) {
+                    val user = FirebaseAuth.getInstance().currentUser
+                } else {
+                    Toast.makeText(this, "" + response?.error, Toast.LENGTH_SHORT).show()
+                }
+            }
         database = FirebaseDatabase.getInstance()
         firebaseAuth = FirebaseAuth.getInstance()
         clientInfoRef = database.getReference(Constants.CLIENT_INFO_REF)
@@ -64,12 +69,52 @@ class SplashScreenActivity : AppCompatActivity() {
         )
         listener = FirebaseAuth.AuthStateListener { myFirebaseAuth->
             val user = myFirebaseAuth.currentUser
-            if (user  != null){
-                checkUserFromDatabase()
-            }else{
+            if (user != null) {
+                Toast.makeText(
+                    this@SplashScreenActivity,
+                    "Welcome: " + user.uid,
+                    Toast.LENGTH_SHORT
+                ).show()
+                FirebaseMessaging.getInstance()
+                    .token
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            val token = task.result
+                            UserUtils.updateToken(this@SplashScreenActivity, token)
+                            Log.d("TOKEN", token)
+                        } else {
+                            Toast.makeText(
+                                this@SplashScreenActivity,
+                                "Failed to get FCM token ${task.exception?.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                checkUserFromFirebase()
+            } else {
                 showLoginLayout()
             }
         }
+
+    }
+    private fun checkUserFromFirebase() {
+        clientInfoRef.child(FirebaseAuth.getInstance().currentUser!!.uid)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        val model = snapshot.getValue(ClientModel::class.java)
+                        goToHomeActivity(model)
+                    } else {
+                        showRegisterLayout()
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(this@SplashScreenActivity, error.message, Toast.LENGTH_LONG)
+                        .show()
+                }
+
+            })
 
     }
 
@@ -80,8 +125,8 @@ class SplashScreenActivity : AppCompatActivity() {
             .build()
         val signInIntent = AuthUI.getInstance()
             .createSignInIntentBuilder()
-            .setAuthMethodPickerLayout(authMethodPickerLayout)
             .setTheme(R.style.LoginTheme)
+            .setAuthMethodPickerLayout(authMethodPickerLayout)
             .setAvailableProviders(providers)
             .setIsSmartLockEnabled(false)
             .build()
@@ -89,25 +134,7 @@ class SplashScreenActivity : AppCompatActivity() {
 
     }
 
-    private fun checkUserFromDatabase() {
-        clientInfoRef.child(FirebaseAuth.getInstance().currentUser?.uid!!)
-            .addListenerForSingleValueEvent(object :ValueEventListener{
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    if (snapshot.exists()){
-                        val model = snapshot.getValue(ClientModel::class.java)
-                        goToHomeActivity(model)
 
-                    }else{
-                        showRegisterLayout()
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@SplashScreenActivity, error.message, Toast.LENGTH_SHORT).show()
-                }
-
-            })
-    }
 
     private fun showRegisterLayout() {
         val builder = AlertDialog.Builder(this, R.style.DialogTheme)
@@ -205,10 +232,9 @@ class SplashScreenActivity : AppCompatActivity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        if (firebaseAuth != null && listener != null){
-            firebaseAuth.removeAuthStateListener(listener)
-        }
-    }
+
+
+    override fun onStop() {
+        if (firebaseAuth != null && listener != null) firebaseAuth.removeAuthStateListener(listener)
+        super.onStop()    }
 }

@@ -52,6 +52,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
+    implementation("com.google.firebase:firebase-messaging-ktx:23.4.1")
+    implementation("com.google.android.libraries.places:places:3.3.0")
+    implementation("com.google.firebase:firebase-storage-ktx:20.3.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
@@ -72,7 +75,7 @@ dependencies {
 
     //location
 
-    implementation ("com.google.android.gms:play-services-location:21.0.1")
+    implementation ("com.google.android.gms:play-services-location:21.1.0")
 
     //dexter
     implementation ("com.karumi:dexter:6.2.3")
@@ -80,4 +83,22 @@ dependencies {
     //GeoFire
     implementation ("com.firebase:geofire-android:3.2.0")
     implementation ("com.firebase:geofire-android-common:3.2.0")
+    //Sliding Up
+    implementation ("com.sothree.slidinguppanel:library:3.4.0")
+
+    //retrofit
+    implementation ("com.google.code.gson:gson:2.10.1")
+    implementation ("com.squareup.retrofit2:retrofit:r_latest_version")
+    implementation ("com.squareup.retrofit2:converter-gson:2.1.0")
+    implementation ("com.squareup.retrofit2:converter-scalars:2.1.0")
+    implementation ("com.github.akarnokd:rxjava3-retrofit-adapter:3.0.0")
+    //Event Bus
+    implementation("org.greenrobot:eventbus:3.3.1")
+    //Maps Utils
+    implementation ("com.google.maps.android:android-maps-utils:2.3.0")
+    //Circle Image
+    implementation ("de.hdodenhof:circleimageview:3.1.0")
+    //Picasso
+    implementation ("com.squareup.picasso:picasso:2.8")
+
 }
