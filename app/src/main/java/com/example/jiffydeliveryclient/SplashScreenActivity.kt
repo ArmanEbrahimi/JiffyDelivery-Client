@@ -14,6 +14,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import com.example.jiffydeliveryclient.model.ClientModel
+import com.example.jiffydeliveryclient.ui.HomeActivity
 import com.example.jiffydeliveryclient.utils.Constants
 import com.firebase.ui.auth.AuthMethodPickerLayout
 import com.firebase.ui.auth.AuthUI
@@ -189,6 +190,8 @@ class SplashScreenActivity : AppCompatActivity() {
 
     private fun goToHomeActivity(model: ClientModel?) {
         Constants.currentClient = model
+        startActivity(Intent(this, HomeActivity::class.java))
+        finish()
     }
 
     override fun onStart() {
