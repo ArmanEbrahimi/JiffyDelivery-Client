@@ -41,9 +41,14 @@
             android:label="@string/title_activity_home"
             android:theme="@style/Theme.JiffyDeliveryClient.NoActionBar" />
         <activity
+            android:name=".ui.RequestCourierActivity"
+            android:exported="false"
+            android:label="@string/title_activity_request_driver" />
+        <activity
             android:name=".SplashScreenActivity"
             android:exported="true"
             android:theme="@style/SplashScreenTheme">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

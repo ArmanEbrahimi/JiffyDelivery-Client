@@ -35,6 +35,8 @@
     <string name="meet_courier_here">Meet the courier here</string>
     <string name="city_name_not_found">City Not Found</string>
     <string name="key_not_found">Key Not Found</string>
+    <string name="meet_driver_here">Meet the Courier Here!\n</string>
+    <string name="title_activity_request_driver">RequestCourierActivity</string>
 
 
 </resources>
