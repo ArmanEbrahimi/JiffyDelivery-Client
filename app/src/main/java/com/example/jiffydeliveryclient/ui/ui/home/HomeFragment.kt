@@ -4,6 +4,7 @@ package com.example.jiffydeliveryclient.ui.ui.home
 import android.Manifest
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.location.Address
@@ -33,8 +34,10 @@ import com.example.jiffydeliveryclient.model.AnimationModel
 import com.example.jiffydeliveryclient.model.CourierGeoModel
 import com.example.jiffydeliveryclient.model.CourierInfoModel
 import com.example.jiffydeliveryclient.model.GeoQueryModel
+import com.example.jiffydeliveryclient.model.SelectedPlaceEvent
 import com.example.jiffydeliveryclient.remote.GoogleAPI
 import com.example.jiffydeliveryclient.remote.RetrofitClient
+import com.example.jiffydeliveryclient.ui.RequestCourierActivity
 import com.example.jiffydeliveryclient.utils.Constants
 import com.firebase.geofire.GeoFire
 import com.firebase.geofire.GeoLocation
@@ -60,6 +63,7 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
+import com.google.common.eventbus.EventBus
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -258,8 +262,25 @@ class HomeFragment : Fragment(), OnMapReadyCallback, FirebaseCourierInfoListener
             }
 
             override fun onPlaceSelected(destinationLocation: Place) {
-
-
+                //
+                if (ActivityCompat.checkSelfPermission(
+                        requireContext(),
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                        requireContext(),
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    Snackbar.make(requireView(),getString(R.string.permission_required)+ destinationLocation.latLng!!, Snackbar.LENGTH_LONG).show()
+                    return
+                }
+                fusedLocationProviderClient.lastLocation.addOnSuccessListener { location->
+                    val origin = LatLng(location.latitude,location.longitude)
+                    val destination = LatLng(destinationLocation.latLng.latitude,
+                        destinationLocation.latLng.longitude)
+                    startActivity(Intent(requireContext(),RequestCourierActivity::class.java))
+                    org.greenrobot.eventbus.EventBus.getDefault().postSticky(SelectedPlaceEvent(origin,destination))
+                }
             }
 
         })
