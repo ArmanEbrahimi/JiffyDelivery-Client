@@ -18,7 +18,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.Circle
-import com.example.jiffydeliveryclient.databinding.ActivityRequestDriverBinding
+import com.example.jiffydeliveryclient.databinding.ActivityRequestCourierBinding
 import com.example.jiffydeliveryclient.remote.GoogleAPI
 import com.example.jiffydeliveryclient.remote.RetrofitClient
 import com.example.jiffydeliveryclient.utils.Constants
@@ -59,7 +59,7 @@ class RequestCourierActivity: AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
     private lateinit var mapFragment: SupportMapFragment
-    private lateinit var binding: ActivityRequestDriverBinding
+    private lateinit var binding: ActivityRequestCourierBinding
 
     private var selectedPlaceEvent: SelectedPlaceEvent? = null
     private lateinit var text_origin: TextView
@@ -106,7 +106,7 @@ class RequestCourierActivity: AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivityRequestDriverBinding.inflate(layoutInflater)
+        binding = ActivityRequestCourierBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         init()
