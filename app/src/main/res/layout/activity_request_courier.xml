@@ -16,7 +16,7 @@
             android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:context=".activities.RequestDriverActivity" />
+            tools:context=".ui.RequestCourierActivity" />
 
         <View
             android:id="@+id/fill_maps"
@@ -35,7 +35,7 @@
         android:layout_alignParentBottom="true">
 
         <androidx.cardview.widget.CardView xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/confirm_uber_layout"
+            android:id="@+id/confirm_courier_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
@@ -88,7 +88,7 @@
                     android:paddingBottom="8dp">
 
                     <androidx.appcompat.widget.AppCompatButton
-                        android:id="@+id/button_confirm_uber"
+                        android:id="@+id/button_confirm_courier"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@android:color/black"
@@ -173,7 +173,7 @@
             android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/fiding_your_rider_layout">
+            android:id="@+id/fiding_your_courier_layout">
 
 
             <androidx.appcompat.widget.LinearLayoutCompat
