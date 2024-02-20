@@ -275,12 +275,12 @@ class RequestCourierActivity: AppCompatActivity(), OnMapReadyCallback {
     private fun init() {
         googleAPI = RetrofitClient.instance!!.create(GoogleAPI::class.java)
 
-        findViewById<Button>(R.id.button_confirm_uber)
+        findViewById<Button>(R.id.button_confirm_courier)
             .setOnClickListener {
                 text_address_pickup = findViewById<View>(R.id.confirm_pickup_layout)
                     .findViewById<TextView>(R.id.text_view_address_pickup)
                 findViewById<View>(R.id.confirm_pickup_layout).visibility = View.VISIBLE
-                findViewById<View>(R.id.confirm_uber_layout).visibility = View.GONE
+                findViewById<View>(R.id.confirm_courier_layout).visibility = View.GONE
                 setDataPickup()
             }
 
@@ -307,7 +307,7 @@ class RequestCourierActivity: AppCompatActivity(), OnMapReadyCallback {
     private fun addMarkerWithPulseAnimation() {
         findViewById<View>(R.id.confirm_pickup_layout).visibility = View.GONE
         findViewById<View>(R.id.fill_maps).visibility = View.VISIBLE
-        findViewById<View>(R.id.fiding_your_rider_layout).visibility = View.VISIBLE
+        findViewById<View>(R.id.fiding_your_courier_layout).visibility = View.VISIBLE
 
         originMarker = mMap.addMarker(
             MarkerOptions().icon(BitmapDescriptorFactory.defaultMarker())
@@ -366,7 +366,7 @@ class RequestCourierActivity: AppCompatActivity(), OnMapReadyCallback {
 
         animator!!.start()
 
-        findNearbyDriver(target)
+        //findNearbyDriver(target)
     }
 
     private fun findNearbyDriver(target: LatLng) {
