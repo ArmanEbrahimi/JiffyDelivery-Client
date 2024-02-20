@@ -366,43 +366,43 @@ class RequestCourierActivity: AppCompatActivity(), OnMapReadyCallback {
 
         animator!!.start()
 
-        //findNearbyDriver(target)
+        findNearbyCourier(target)
     }
 
-    private fun findNearbyDriver(target: LatLng) {
+    private fun findNearbyCourier(target: LatLng) {
         if (Constants.couriersFound.size > 0) {
             var min = 0f
-            var foundDriver = Constants.couriersFound[Constants.couriersFound.keys.iterator()
-                .next()] // Default found driver is the frist driver
+            var foundCourier = Constants.couriersFound[Constants.couriersFound.keys.iterator()
+                .next()] // Default found driver is the first driver
 
-            val currentRiderLocation = Location("")
-            currentRiderLocation.latitude = target.latitude
-            currentRiderLocation.longitude = target.longitude
+            val currentCourierLocation = Location("")
+            currentCourierLocation.latitude = target.latitude
+            currentCourierLocation.longitude = target.longitude
 
             for (key in Constants.couriersFound.keys) {
 
-                val driverLocation = Location("")
-                driverLocation.latitude = Constants.couriersFound[key]!!.geoLocation!!.latitude
-                driverLocation.longitude = Constants.couriersFound[key]!!.geoLocation!!.longitude
+                val courierLocation = Location("")
+                courierLocation.latitude = Constants.couriersFound[key]!!.geoLocation!!.latitude
+                courierLocation.longitude = Constants.couriersFound[key]!!.geoLocation!!.longitude
 
                 //First, init min value and found driver if first driver is in list
                 if (min == 0f) {
-                    min = driverLocation.distanceTo(currentRiderLocation)
-                    foundDriver = Constants.couriersFound[key]
-                } else if (driverLocation.distanceTo(currentRiderLocation) < min) {
-                    min = driverLocation.distanceTo(currentRiderLocation)
-                    foundDriver = Constants.couriersFound[key]
+                    min = courierLocation.distanceTo(currentCourierLocation)
+                    foundCourier = Constants.couriersFound[key]
+                } else if (courierLocation.distanceTo(currentCourierLocation) < min) {
+                    min = courierLocation.distanceTo(currentCourierLocation)
+                    foundCourier = Constants.couriersFound[key]
                 }
             }
-//            Snackbar.make(
-//                mapFragment.requireView(), StringBuilder("Found driver: ")
-//                    .append(foundDriver!!.driverInfoModel!!.phoneNumber), Snackbar.LENGTH_LONG
-//            ).show()
+            Snackbar.make(
+                mapFragment.requireView(), StringBuilder("Found driver: ")
+                    .append(foundCourier!!.courierInfoModel!!.firstName), Snackbar.LENGTH_LONG
+            ).show()
 
-            UserUtils.sendRequestToDriver(this@RequestCourierActivity,
-                findViewById<View>(R.id.main_layout),
-                foundDriver,
-                target)
+//            UserUtils.sendRequestToDriver(this@RequestCourierActivity,
+//                findViewById<View>(R.id.main_layout),
+//                foundCourier,
+//                target)
 
         } else {
             Snackbar.make(
