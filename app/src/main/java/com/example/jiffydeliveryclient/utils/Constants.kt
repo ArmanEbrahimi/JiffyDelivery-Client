@@ -26,7 +26,7 @@ object Constants{
     val NOTI_BODY: String = "body"
     val COURIER_KEY: String = "CourierKey"
     val REQUEST_COURIER_TITLE: String = "RequestCourier"
-    val PICKUP_LOCATION: String = "PickIupLocation"
+    val PICKUP_LOCATION: String = "PickupLocation"
     val markerList: HashMap<String, Marker> = HashMap()
 
 
