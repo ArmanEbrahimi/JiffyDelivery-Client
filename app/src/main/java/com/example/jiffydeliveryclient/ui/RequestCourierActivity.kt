@@ -394,15 +394,15 @@ class RequestCourierActivity: AppCompatActivity(), OnMapReadyCallback {
                     foundCourier = Constants.couriersFound[key]
                 }
             }
-            Snackbar.make(
-                mapFragment.requireView(), StringBuilder("Found driver: ")
-                    .append(foundCourier!!.courierInfoModel!!.firstName), Snackbar.LENGTH_LONG
-            ).show()
+//            Snackbar.make(
+//                mapFragment.requireView(), StringBuilder("Found driver: ")
+//                    .append(foundCourier!!.courierInfoModel!!.firstName), Snackbar.LENGTH_LONG
+//            ).show()
 
-//            UserUtils.sendRequestToDriver(this@RequestCourierActivity,
-//                findViewById<View>(R.id.main_layout),
-//                foundCourier,
-//                target)
+            UserUtils.sendRequestToDriver(this@RequestCourierActivity,
+                findViewById<View>(R.id.main_layout),
+                foundCourier,
+                target)
 
         } else {
             Snackbar.make(

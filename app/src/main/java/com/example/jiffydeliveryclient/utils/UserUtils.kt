@@ -1,6 +1,7 @@
 package com.example.jiffydeliveryclient.utils
 
 import android.content.Context
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.example.jiffydeliveryclient.R
@@ -15,6 +16,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.getValue
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -49,7 +51,7 @@ object UserUtils {
     fun sendRequestToDriver(
         context: Context,
         main_layout: View?,
-        foundDriver: CourierGeoModel?,
+        foundCourier: CourierGeoModel?,
         target: LatLng
     ) {
         val compositeDisposable = CompositeDisposable()
@@ -57,12 +59,13 @@ object UserUtils {
         //Get token
         FirebaseDatabase.getInstance()
             .getReference(Constants.TOKEN_REFERENCE)
-            .child(foundDriver!!.key!!)
+            .child(foundCourier!!.key!!)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (snapshot.exists()) {
+                        Log.d("tokenmodel",snapshot.getValue().toString())
+                        //val tokenModel = snapshot.getValue(TokenModel::class.java)
 
-                        val tokenModel = snapshot.getValue(TokenModel::class.java)
 
                         val notificationData: MutableMap<String, String> = HashMap()
                         notificationData.put(Constants.NOTI_TITLE, Constants.REQUEST_COURIER_TITLE)
@@ -77,7 +80,7 @@ object UserUtils {
                                 .toString()
                         )
 
-                        val fcmSendData = FCMSendData(tokenModel!!.token, notificationData)
+                        val fcmSendData = FCMSendData(snapshot.getValue().toString(), notificationData)
 
                         compositeDisposable.add(fcmService.sendNotification(fcmSendData)
                             .subscribeOn(Schedulers.newThread())
