@@ -10,6 +10,7 @@ import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.jiffydeliveryclient.R
@@ -19,6 +20,8 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.Circle
 import com.example.jiffydeliveryclient.databinding.ActivityRequestCourierBinding
+import com.example.jiffydeliveryclient.model.CourierGeoModel
+import com.example.jiffydeliveryclient.model.DeclineRequestFromCourier
 import com.example.jiffydeliveryclient.remote.GoogleAPI
 import com.example.jiffydeliveryclient.remote.RetrofitClient
 import com.example.jiffydeliveryclient.utils.Constants
@@ -46,7 +49,10 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.json.JSONObject
 
-class RequestCourierActivity: AppCompatActivity(), OnMapReadyCallback {
+class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
+
+    private var lastCourierCall: CourierGeoModel? = null
+
     //Spinning animation
     private var animator: ValueAnimator? = null
     private val DESIRED_NUM_OF_SPINS = 5
@@ -90,7 +96,19 @@ class RequestCourierActivity: AppCompatActivity(), OnMapReadyCallback {
             EventBus.getDefault().removeStickyEvent(SelectedPlaceEvent::class.java)
             EventBus.getDefault().unregister(this)
         }
+        if (EventBus.getDefault().hasSubscriberForEvent(DeclineRequestFromCourier::class.java)) {
+            EventBus.getDefault().removeStickyEvent(DeclineRequestFromCourier::class.java)
+            EventBus.getDefault().unregister(this)
+        }
         super.onStop()
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    fun onDeclineReceived(event: DeclineRequestFromCourier) {
+        if (lastCourierCall != null) {
+            Constants.couriersFound.get(lastCourierCall!!.key)!!.isDeclined = true
+            findNearbyCourier(selectedPlaceEvent!!.origin)
+        }
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
@@ -372,8 +390,7 @@ class RequestCourierActivity: AppCompatActivity(), OnMapReadyCallback {
     private fun findNearbyCourier(target: LatLng) {
         if (Constants.couriersFound.size > 0) {
             var min = 0f
-            var foundCourier = Constants.couriersFound[Constants.couriersFound.keys.iterator()
-                .next()] // Default found driver is the first driver
+            var foundCourier: CourierGeoModel? = null
 
             val currentCourierLocation = Location("")
             currentCourierLocation.latitude = target.latitude
@@ -388,21 +405,41 @@ class RequestCourierActivity: AppCompatActivity(), OnMapReadyCallback {
                 //First, init min value and found driver if first driver is in list
                 if (min == 0f) {
                     min = courierLocation.distanceTo(currentCourierLocation)
-                    foundCourier = Constants.couriersFound[key]
+                    if (!Constants.couriersFound[key]!!.isDeclined) {
+                        foundCourier = Constants.couriersFound[key]
+                        break // exit the loop because we already have found a courier
+                    } else {
+                        continue // if it is already declined skip and continue
+                    }
                 } else if (courierLocation.distanceTo(currentCourierLocation) < min) {
                     min = courierLocation.distanceTo(currentCourierLocation)
-                    foundCourier = Constants.couriersFound[key]
+                    if (!Constants.couriersFound[key]!!.isDeclined) {
+                        foundCourier = Constants.couriersFound[key]
+                        break // exit the loop because we already have found a courier
+                    } else {
+                        continue // if it is already declined skip and continue
+                    }
                 }
+            }
+            if (foundCourier != null){
+                UserUtils.sendRequestToDriver(
+                    this@RequestCourierActivity,
+                    findViewById<View>(R.id.main_layout),
+                    foundCourier,
+                    target
+                )
+                lastCourierCall = foundCourier
+            }else{
+                Toast.makeText(this@RequestCourierActivity, getString(R.string.no_courier_accepted_the_request), Toast.LENGTH_SHORT).show()
+                lastCourierCall = null
+                finish()
             }
 //            Snackbar.make(
 //                mapFragment.requireView(), StringBuilder("Found driver: ")
 //                    .append(foundCourier!!.courierInfoModel!!.firstName), Snackbar.LENGTH_LONG
 //            ).show()
 
-            UserUtils.sendRequestToDriver(this@RequestCourierActivity,
-                findViewById<View>(R.id.main_layout),
-                foundCourier,
-                target)
+
 
         } else {
             Snackbar.make(
@@ -410,6 +447,8 @@ class RequestCourierActivity: AppCompatActivity(), OnMapReadyCallback {
                 getString(R.string.couriers_not_found),
                 Snackbar.LENGTH_LONG
             ).show()
+            lastCourierCall = null
+            finish()
         }
     }
 
