@@ -156,7 +156,7 @@ object Constants{
         if (intent != null)
             pendingIntent =
                 PendingIntent.getActivity(context, id, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        val NOTIFICATION_CHANNEL_ID = "com.example.rideruberclone"
+        val NOTIFICATION_CHANNEL_ID = "com.example.jiffydeliveryclient"
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
