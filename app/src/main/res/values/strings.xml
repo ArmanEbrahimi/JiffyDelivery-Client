@@ -37,6 +37,7 @@
     <string name="key_not_found">Key Not Found</string>
     <string name="meet_driver_here">Meet the Courier Here!\n</string>
     <string name="title_activity_request_driver">RequestCourierActivity</string>
+    <string name="no_courier_accepted_the_request">No Courier Accepted the Request!</string>
 
 
 </resources>

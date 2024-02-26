@@ -579,7 +579,13 @@ class HomeFragment : Fragment(), OnMapReadyCallback, FirebaseCourierInfoListener
                             marker.remove()
                             Constants.markerList.remove(courierGeoModel.key)
                             Constants.couriersSubscribe.remove(courierGeoModel.key)
+
+                            //fix error if a courier declines a request, they can stop and reopen the app
+                            if (Constants.couriersFound!= null && Constants.couriersFound[courierGeoModel.key] != null){
+                                Constants.couriersFound.remove(courierGeoModel.key)
+                            }
                             courierLocation.removeEventListener(this)
+
                         }
                     } else {
                         val geoQueryModel = snapshot.getValue(GeoQueryModel::class.java)
