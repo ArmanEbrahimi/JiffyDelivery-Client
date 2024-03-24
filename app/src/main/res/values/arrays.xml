@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Weight options -->
+    <string-array name="weight_options">
+        <item>Under 1 kg</item>
+        <item>1-3 kg</item>
+        <item>3-10 kg</item>
+    </string-array>
+
+    <!-- Size options -->
+    <string-array name="size_options">
+        <item>Under 10 cm</item>
+        <item>10-20 cm</item>
+        <item>Bigger than 30 cm</item>
+    </string-array>
+</resources>

@@ -20,11 +20,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
 import android.widget.RelativeLayout
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import com.google.android.material.snackbar.Snackbar
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.jiffydeliveryclient.R
 import com.example.jiffydeliveryclient.databinding.FragmentHomeBinding
@@ -110,16 +112,6 @@ class HomeFragment : Fragment(), OnMapReadyCallback, FirebaseCourierInfoListener
     val compositeDisposable = CompositeDisposable()
     private lateinit var googleApi: GoogleAPI
 
-    //moving marker
-//    var polylineList:MutableList<LatLng>? = null
-//    var handler: Handler? = null
-//    var index : Int = 0
-//    var next :Int = 0
-//    var v : Float = 0.0f
-//    var lat : Double = 0.0
-//    var lng : Double = 0.0
-//    var start : LatLng? = null
-//    var end : LatLng? = null
 
     //Listener
     private lateinit var firebaseCourierInfoListener: FirebaseCourierInfoListener
@@ -153,6 +145,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback, FirebaseCourierInfoListener
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
+
 
         init()
         initView(root)

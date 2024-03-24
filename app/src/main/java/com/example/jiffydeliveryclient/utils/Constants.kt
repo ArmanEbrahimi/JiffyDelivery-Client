@@ -25,6 +25,10 @@ object Constants{
         return StringBuilder(firstName).append(" ").append(lastName).toString()
     }
 
+    val DURATION: String = "duration"
+    val ORDER_SIZE: String = "OrderSize"
+    val ORDER_WEIGHT: String = "OrderWeight"
+    val ORDER_INFO_REFERENCE :String = "OrderInfoRef"
     val REQUEST_COURIER_DECLINED: String? = "Declined"
     val COURIERS_LOCATION_REFERENCE = "CouriersLocation"
     val COURIER_INFO_REFERENCE: String = "CourierInfoRef"
@@ -36,7 +40,7 @@ object Constants{
     val couriersSubscribe: MutableMap<String, AnimationModel> = HashMap()
     val NOTI_TITLE: String = "title"
     val NOTI_BODY: String = "body"
-    val COURIER_KEY: String = "CourierKey"
+    val CLIENT_KEY: String = "ClientKey"
     val REQUEST_COURIER_TITLE: String = "RequestCourier"
     val PICKUP_LOCATION: String = "PickupLocation"
     val markerList: HashMap<String, Marker> = HashMap()

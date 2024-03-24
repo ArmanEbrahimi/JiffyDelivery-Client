@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.Button
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -22,6 +23,7 @@ import com.google.android.gms.maps.model.Circle
 import com.example.jiffydeliveryclient.databinding.ActivityRequestCourierBinding
 import com.example.jiffydeliveryclient.model.CourierGeoModel
 import com.example.jiffydeliveryclient.model.DeclineRequestFromCourier
+import com.example.jiffydeliveryclient.model.Order
 import com.example.jiffydeliveryclient.remote.GoogleAPI
 import com.example.jiffydeliveryclient.remote.RetrofitClient
 import com.example.jiffydeliveryclient.utils.Constants
@@ -40,6 +42,9 @@ import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.gms.maps.model.SquareCap
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.google.maps.android.ui.IconGenerator
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -60,7 +65,7 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
 
     //Effect
     private var lastUserCircle: Circle? = null
-    private val duration = 1000
+    private val durationTime = 1000
     private var lastPulseAnimator: ValueAnimator? = null
 
     private lateinit var mMap: GoogleMap
@@ -81,6 +86,14 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
     private var polylineList: MutableList<LatLng>? = null
     private var originMarker: Marker? = null
     private var destinationMarker: Marker? = null
+
+    //order info
+    private lateinit var database: FirebaseDatabase
+    private lateinit var orderWeight : Spinner
+    private lateinit var orderSize: Spinner
+    private lateinit var orderInfoRef: DatabaseReference
+    private lateinit var order: Order
+    private lateinit var duration: String
 
 
     override fun onStart() {
@@ -126,6 +139,9 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
 
         binding = ActivityRequestCourierBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        orderWeight = findViewById(R.id.spinner_weight)
+        orderSize = findViewById(R.id.spinner_size)
 
         init()
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -232,7 +248,7 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
                     val legsObject = legs.getJSONObject(0)
 
                     val time = legsObject.getJSONObject("duration")
-                    val duration = time.getString("text")
+                    duration = time.getString("text")
 
                     val start_address = legsObject.getString("start_address")
                     val end_address = legsObject.getString("end_address")
@@ -293,14 +309,46 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun init() {
         googleAPI = RetrofitClient.instance!!.create(GoogleAPI::class.java)
 
-        findViewById<Button>(R.id.button_confirm_courier)
+        database = FirebaseDatabase.getInstance()
+        orderInfoRef = database.getReference(Constants.ORDER_INFO_REFERENCE)
+
+        findViewById<Button>(R.id.button_confirm_order)
             .setOnClickListener {
                 text_address_pickup = findViewById<View>(R.id.confirm_pickup_layout)
                     .findViewById<TextView>(R.id.text_view_address_pickup)
                 findViewById<View>(R.id.confirm_pickup_layout).visibility = View.VISIBLE
                 findViewById<View>(R.id.confirm_courier_layout).visibility = View.GONE
+
+                 order = Order(orderWeight.selectedItem.toString(),
+                    orderSize.selectedItem.toString(),
+                    selectedPlaceEvent!!.destination.toString(),
+                    selectedPlaceEvent!!.origin.toString())
+
+                orderInfoRef.child(FirebaseAuth.getInstance().currentUser!!.uid)
+                    .setValue(order)
+                    .addOnFailureListener {
+                        Toast.makeText(
+                            this@RequestCourierActivity,
+                            "${it.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }.addOnSuccessListener {
+                        Toast.makeText(
+                            this@RequestCourierActivity,
+                            "Order Placed Successfully!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                    }
+
+                Log.d("order info",""+order.weight+" "+order.size+" "+
+                order.destination+" "+order.origin)
+
+                findNearbyCourier(selectedPlaceEvent!!.origin)
+
                 setDataPickup()
             }
+
 
         findViewById<Button>(R.id.btn_confirm_pickup)
             .setOnClickListener {
@@ -339,7 +387,7 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun addPulsatingEffect(origin: LatLng) {
         if (lastPulseAnimator != null) lastPulseAnimator!!.cancel()
         if (lastUserCircle != null) lastUserCircle!!.center = origin
-        lastPulseAnimator = Constants.valueAnimate(duration.toLong()) { animation ->
+        lastPulseAnimator = Constants.valueAnimate(durationTime.toLong()) { animation ->
             if (lastUserCircle != null) lastUserCircle!!.radius =
                 animation.animatedValue.toString().toDouble() else {
                 lastUserCircle = mMap.addCircle(
@@ -384,7 +432,7 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
 
         animator!!.start()
 
-        findNearbyCourier(target)
+        //findNearbyCourier(target)
     }
 
     private fun findNearbyCourier(target: LatLng) {
@@ -426,7 +474,9 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
                     this@RequestCourierActivity,
                     findViewById<View>(R.id.main_layout),
                     foundCourier,
-                    target
+                    target,
+                    order,
+                    Constants.formatDuration(duration).toString()
                 )
                 lastCourierCall = foundCourier
             }else{

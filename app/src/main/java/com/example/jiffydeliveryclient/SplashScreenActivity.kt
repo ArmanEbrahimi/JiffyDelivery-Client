@@ -77,7 +77,7 @@ class SplashScreenActivity : AppCompatActivity() {
                     .child(user!!.uid).addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
                             firstName = snapshot.getValue(ClientModel::class.java)?.firstName
-                            Log.d("firstName", firstName!!)
+                            //Log.d("firstName", firstName!!)
                             handleWelcomeMessage(user, firstName)
                         }
 

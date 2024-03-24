@@ -1,3 +1,5 @@
 package com.example.jiffydeliveryclient.remote
 
-class FCMSendData(var to: String, var data: Map<String, String>)
+import com.example.jiffydeliveryclient.model.Order
+
+class FCMSendData(var to: String, var data: Map<String, String>,var order: Order)

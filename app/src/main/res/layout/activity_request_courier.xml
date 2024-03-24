@@ -45,6 +45,26 @@
                 android:orientation="vertical"
                 android:paddingTop="8dp"
                 android:paddingBottom="8dp">
+                <Spinner
+                    android:id="@+id/spinner_weight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:paddingLeft="16dp"
+                    android:paddingRight="16dp"
+                    android:background="@drawable/spinner_bg"
+                    android:entries="@array/weight_options" />
+                <Spinner
+                    android:id="@+id/spinner_size"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:paddingLeft="16dp"
+                    android:paddingRight="16dp"
+                    android:background="@drawable/spinner_bg"
+                    android:entries="@array/size_options" />
 
 
                 <androidx.appcompat.widget.LinearLayoutCompat
@@ -88,11 +108,11 @@
                     android:paddingBottom="8dp">
 
                     <androidx.appcompat.widget.AppCompatButton
-                        android:id="@+id/button_confirm_courier"
+                        android:id="@+id/button_confirm_order"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@android:color/black"
-                        android:text="@string/confirm_courier"
+                        android:text="@string/confirm_order"
                         android:textColor="@android:color/white" />
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
