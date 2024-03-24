@@ -26,7 +26,7 @@
     <string name="permission_required">Permission for location required</string>
     <string name="menu_exit">Sing out</string>
     <string name="pay_by_cash">Pay by Cash</string>
-    <string name="confirm_courier">Confirm Courier</string>
+    <string name="confirm_order">Confirm Order</string>
     <string name="confirm_pickup">Confirm Pickup\n</string>
     <string name="finding_your_rider">Find Your Courier\n</string>
     <string name="send_request_to_courier_failed">Send request to the courier failed</string>

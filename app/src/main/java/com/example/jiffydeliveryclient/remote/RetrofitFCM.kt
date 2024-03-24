@@ -6,9 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitFCM {
     val instance: Retrofit? = null
-        get() = if (field == null) Retrofit.Builder()
-            .baseUrl("https://fcm.googleapis.com/")
+        get() = if (field == null) Retrofit.Builder().baseUrl("https://fcm.googleapis.com/")
             .addConverterFactory(GsonConverterFactory.create())
-            .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
-            .build() else field
+            .addCallAdapterFactory(RxJava3CallAdapterFactory.create()).build() else field
 }

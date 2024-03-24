@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.Toast
 import com.example.jiffydeliveryclient.R
 import com.example.jiffydeliveryclient.model.CourierGeoModel
+import com.example.jiffydeliveryclient.model.Order
 import com.example.jiffydeliveryclient.remote.FCMSendData
 import com.example.jiffydeliveryclient.remote.FCMService
 import com.example.jiffydeliveryclient.remote.RetrofitFCM
@@ -52,7 +53,9 @@ object UserUtils {
         context: Context,
         main_layout: View?,
         foundCourier: CourierGeoModel?,
-        target: LatLng
+        target: LatLng,
+        order: Order,
+        duration: String
     ) {
         val compositeDisposable = CompositeDisposable()
         val fcmService = RetrofitFCM.instance!!.create(FCMService::class.java)
@@ -70,7 +73,7 @@ object UserUtils {
                         val notificationData: MutableMap<String, String> = HashMap()
                         notificationData.put(Constants.NOTI_TITLE, Constants.REQUEST_COURIER_TITLE)
                         notificationData.put(Constants.NOTI_BODY, "This is the notification body")
-                        notificationData.put(Constants.COURIER_KEY,FirebaseAuth.getInstance().currentUser!!.uid)
+                        notificationData.put(Constants.CLIENT_KEY,FirebaseAuth.getInstance().currentUser!!.uid)
                         notificationData.put(
                             Constants.PICKUP_LOCATION,
                             StringBuilder()
@@ -79,8 +82,11 @@ object UserUtils {
                                 .append(target.longitude)
                                 .toString()
                         )
+                        notificationData.put(Constants.ORDER_WEIGHT,order.weight)
+                        notificationData.put(Constants.ORDER_SIZE,order.size)
+                        notificationData.put(Constants.DURATION,duration)
 
-                        val fcmSendData = FCMSendData(snapshot.getValue().toString(), notificationData)
+                        val fcmSendData = FCMSendData(snapshot.getValue().toString(), notificationData,order)
 
                         compositeDisposable.add(fcmService.sendNotification(fcmSendData)
                             .subscribeOn(Schedulers.newThread())
