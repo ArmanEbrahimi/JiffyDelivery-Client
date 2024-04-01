@@ -1,6 +1,7 @@
 package com.example.jiffydeliveryclient.utils
 
 import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -29,7 +30,7 @@ object Constants{
     val ORDER_SIZE: String = "OrderSize"
     val ORDER_WEIGHT: String = "OrderWeight"
     val ORDER_INFO_REFERENCE :String = "OrderInfoRef"
-    val REQUEST_COURIER_DECLINED: String? = "Declined"
+    val REQUEST_COURIER_DECLINED: String? = "RequestDeclined"
     val COURIERS_LOCATION_REFERENCE = "CouriersLocation"
     val COURIER_INFO_REFERENCE: String = "CourierInfoRef"
     val CLIENT_LOCATION_REFERENCE= "ClientLocation"
@@ -148,7 +149,7 @@ object Constants{
         ) + 270).toFloat()
         return (-1).toFloat()
     }
-
+    @SuppressLint("UnspecifiedImmutableFlag")
     fun showNotification(
         context: Context,
         id: Int,
@@ -160,16 +161,16 @@ object Constants{
         if (intent != null)
             pendingIntent =
                 PendingIntent.getActivity(context, id, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        val NOTIFICATION_CHANNEL_ID = "com.example.rideruberclone"
+        val NOTIFICATION_CHANNEL_ID = "com.example.jiffydeliveryclient"
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationChannel = NotificationChannel(
-                NOTIFICATION_CHANNEL_ID, "Uber Clone",
+                NOTIFICATION_CHANNEL_ID, "Jiffy Delivery Client",
                 NotificationManager.IMPORTANCE_HIGH
             )
-            notificationChannel.description = "Uber Clone"
+            notificationChannel.description = "Jiffy Delivery Client"
             notificationChannel.enableLights(true)
             notificationChannel.lightColor = Color.RED
             notificationChannel.vibrationPattern = longArrayOf(0, 1000, 500, 1000)
@@ -186,11 +187,11 @@ object Constants{
         builder.setContentText(body)
         builder.setPriority(NotificationCompat.PRIORITY_HIGH)
         builder.setDefaults(android.app.Notification.DEFAULT_VIBRATE)
-        builder.setSmallIcon(R.drawable.scooter25)
+        builder.setSmallIcon(R.drawable.basline_motor_cycle)
         builder.setLargeIcon(
             BitmapFactory.decodeResource(
                 context.resources,
-                R.drawable.scooter25
+                R.drawable.basline_motor_cycle
             )
         )
 

@@ -1,5 +1,6 @@
 package com.example.jiffydeliveryclient.services
 
+import android.util.Log
 import com.example.jiffydeliveryclient.model.DeclineRequestFromCourier
 import com.example.jiffydeliveryclient.utils.Constants
 import com.example.jiffydeliveryclient.utils.UserUtils
@@ -17,25 +18,29 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         }
     }
 
+    override fun onDeletedMessages() {
+        super.onDeletedMessages()
+        Log.d("deleted","I am called")
+    }
+
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
-        if (message != null) {
+            Log.d("fb.dec","I am called")
             val data = message.data
-            if (data[Constants.NOTI_TITLE] != null){
-                if (data[Constants.NOTI_TITLE].equals(Constants.REQUEST_COURIER_DECLINED)){
-                    EventBus.getDefault().postSticky(DeclineRequestFromCourier())
 
-                }else{
-                    Constants.showNotification(
-                        this, kotlin.random.Random.nextInt(),
-                        data[Constants.NOTI_TITLE],
-                        data[Constants.NOTI_BODY],
-                        null
-                    )
+            if (data[Constants.NOTI_TITLE].equals(Constants.REQUEST_COURIER_DECLINED)) {
+                EventBus.getDefault().postSticky(DeclineRequestFromCourier())
+                Constants.showNotification(
+                    this, kotlin.random.Random.nextInt(),
+                    data[Constants.NOTI_TITLE],
+                    data[Constants.NOTI_BODY],
+                    null
+                )
 
-                }
+            } else {
+
+                Log.d("else1", "No title called")
             }
 
-        }
     }
 }

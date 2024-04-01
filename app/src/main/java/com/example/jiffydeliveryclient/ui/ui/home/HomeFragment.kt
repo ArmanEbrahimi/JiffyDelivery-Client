@@ -494,6 +494,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback, FirebaseCourierInfoListener
                         .show()
                 }
             }
+
     }
 
     private fun addCourierMarker() {

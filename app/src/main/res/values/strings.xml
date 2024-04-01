@@ -19,7 +19,7 @@
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
     <string name="title_activity_maps">MapsActivity</string>
-    <string name="courier_not_found">\"Courier not found\"</string>
+    <string name="courier_not_found">\"At the moment there is no courier in your area!\"</string>
     <string name="welcome">Good afternoon</string>
     <string name="choose_place">Choose a saved place</string>
     <string name="api_key">AIzaSyAklKpWH6oHJZUc5xAeZEqh1DPXXqCLmL8</string>
