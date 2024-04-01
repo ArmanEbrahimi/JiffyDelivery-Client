@@ -118,6 +118,7 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onDeclineReceived(event: DeclineRequestFromCourier) {
+        Log.d("decline method","I am called")
         if (lastCourierCall != null) {
             Constants.couriersFound.get(lastCourierCall!!.key)!!.isDeclined = true
             findNearbyCourier(selectedPlaceEvent!!.origin)
@@ -437,6 +438,7 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun findNearbyCourier(target: LatLng) {
         if (Constants.couriersFound.size > 0) {
+            Log.d("number of couriers = ",Constants.couriersFound.size.toString())
             var min = 0f
             var foundCourier: CourierGeoModel? = null
 
@@ -480,6 +482,7 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
                 )
                 lastCourierCall = foundCourier
             }else{
+                Log.d("no Courier","There is no Courier")
                 Toast.makeText(this@RequestCourierActivity, getString(R.string.no_courier_accepted_the_request), Toast.LENGTH_SHORT).show()
                 lastCourierCall = null
                 finish()
