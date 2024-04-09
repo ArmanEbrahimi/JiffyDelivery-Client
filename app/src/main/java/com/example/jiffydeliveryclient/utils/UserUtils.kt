@@ -86,6 +86,7 @@ object UserUtils {
                         notificationData.put(Constants.ORDER_WEIGHT,order.weight)
                         notificationData.put(Constants.ORDER_SIZE,order.size)
                         notificationData.put(Constants.DURATION,duration)
+                        notificationData.put(Constants.COURIER_KEY,foundCourier.key!!)
 
                         val fcmSendData = FCMSendData(snapshot.getValue().toString(), notificationData,order)
 
