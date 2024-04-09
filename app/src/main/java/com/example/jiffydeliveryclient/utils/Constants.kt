@@ -26,6 +26,12 @@ object Constants{
         return StringBuilder(firstName).append(" ").append(lastName).toString()
     }
 
+    val LAST_NAME: String = "LastName"
+    val FIRST_NAME: String = "FirstName"
+    val AVATAR_IMAGE: String = "AvatarImage"
+    val ESTIMATED_TIME: String ="EstimatedTime"
+    val REQUEST_ACCEPTED: String= "RequestAccepted"
+    val COURIER_KEY: String="CourierKey"
     val DURATION: String = "duration"
     val ORDER_SIZE: String = "OrderSize"
     val ORDER_WEIGHT: String = "OrderWeight"

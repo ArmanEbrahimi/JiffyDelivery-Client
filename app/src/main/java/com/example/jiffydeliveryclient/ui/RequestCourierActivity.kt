@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.location.Location
 import android.os.Bundle
+import android.text.TextUtils
 import android.util.Log
 import android.view.View
 import android.view.animation.LinearInterpolator
@@ -21,6 +22,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.Circle
 import com.example.jiffydeliveryclient.databinding.ActivityRequestCourierBinding
+import com.example.jiffydeliveryclient.model.AcceptRequestFromCourier
 import com.example.jiffydeliveryclient.model.CourierGeoModel
 import com.example.jiffydeliveryclient.model.DeclineRequestFromCourier
 import com.example.jiffydeliveryclient.model.Order
@@ -46,6 +48,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.maps.android.ui.IconGenerator
+import com.squareup.picasso.Picasso
+import de.hdodenhof.circleimageview.CircleImageView
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -95,6 +99,13 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var order: Order
     private lateinit var duration: String
 
+    //courier info
+    private  var acceptRequestFromCourier: AcceptRequestFromCourier? = null
+    private lateinit var imageAvatar : CircleImageView
+    private lateinit var courierName : TextView
+    private lateinit var expectingTime: TextView
+    private lateinit var msgBody: TextView
+
 
     override fun onStart() {
         if (!EventBus.getDefault().isRegistered(this)) {
@@ -126,6 +137,23 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    fun onAcceptReceived(event: AcceptRequestFromCourier) {
+        acceptRequestFromCourier = event
+        Log.d("accept method","I am called")
+        findViewById<View>(R.id.confirm_pickup_layout).visibility = View.VISIBLE
+        imageAvatar = findViewById(R.id.profile_image)
+        if(acceptRequestFromCourier!!.avatarImage != null && !TextUtils.isEmpty(acceptRequestFromCourier!!.avatarImage) ){
+            Picasso.get().load(acceptRequestFromCourier!!.avatarImage)
+                .into(imageAvatar)
+        }
+
+        courierName.setText(acceptRequestFromCourier!!.firtName+" "+acceptRequestFromCourier!!.lastName)
+        expectingTime.setText("Will be there approximately in: "+ acceptRequestFromCourier!!.expectingTime)
+        msgBody.setText(acceptRequestFromCourier!!.notificationBody)
+
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onSelectedPlaceEvent(event: SelectedPlaceEvent) {
         selectedPlaceEvent = event
     }
@@ -143,6 +171,10 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
 
         orderWeight = findViewById(R.id.spinner_weight)
         orderSize = findViewById(R.id.spinner_size)
+
+        courierName = findViewById(R.id.text_courier_name)
+        expectingTime = findViewById(R.id.text_expecting_time)
+        msgBody = findViewById(R.id.text_body)
 
         init()
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -317,8 +349,7 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
             .setOnClickListener {
                 text_address_pickup = findViewById<View>(R.id.confirm_pickup_layout)
                     .findViewById<TextView>(R.id.text_view_address_pickup)
-                findViewById<View>(R.id.confirm_pickup_layout).visibility = View.VISIBLE
-                findViewById<View>(R.id.confirm_courier_layout).visibility = View.GONE
+                findViewById<View>(R.id.confirm_order_layout).visibility = View.GONE
 
                  order = Order(orderWeight.selectedItem.toString(),
                     orderSize.selectedItem.toString(),
@@ -343,7 +374,7 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
                     }
 
                 Log.d("order info",""+order.weight+" "+order.size+" "+
-                order.destination+" "+order.origin)
+                order.destination+" "+order.origin+order.courier)
 
                 findNearbyCourier(selectedPlaceEvent!!.origin)
 

@@ -102,4 +102,10 @@ dependencies {
     //Picasso
     implementation ("com.squareup.picasso:picasso:2.8")
 
+    //circular progress bar
+    implementation ("com.mikhaellopez:circularprogressbar:3.1.0")
+
+    //Circle image view
+    implementation ("de.hdodenhof:circleimageview:3.1.0")
+
 }

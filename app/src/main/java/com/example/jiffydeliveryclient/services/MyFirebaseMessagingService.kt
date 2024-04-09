@@ -1,6 +1,7 @@
 package com.example.jiffydeliveryclient.services
 
 import android.util.Log
+import com.example.jiffydeliveryclient.model.AcceptRequestFromCourier
 import com.example.jiffydeliveryclient.model.DeclineRequestFromCourier
 import com.example.jiffydeliveryclient.utils.Constants
 import com.example.jiffydeliveryclient.utils.UserUtils
@@ -25,7 +26,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
-            Log.d("fb.dec","I am called")
+
             val data = message.data
 
             if (data[Constants.NOTI_TITLE].equals(Constants.REQUEST_COURIER_DECLINED)) {
@@ -37,10 +38,19 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     null
                 )
 
-            } else {
-
-                Log.d("else1", "No title called")
             }
+
+        if (data[Constants.NOTI_TITLE].equals(Constants.REQUEST_ACCEPTED)){
+            EventBus.getDefault().postSticky(AcceptRequestFromCourier(data[Constants.NOTI_TITLE],
+                data[Constants.NOTI_BODY],
+                data[Constants.COURIER_KEY],
+                data[Constants.ESTIMATED_TIME],
+                data[Constants.AVATAR_IMAGE],
+                data[Constants.FIRST_NAME],
+                data[Constants.LAST_NAME],
+                data[Constants.ESTIMATED_TIME]))
+
+        }
 
     }
 }
