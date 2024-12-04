@@ -25,6 +25,7 @@ import com.example.jiffydeliveryclient.databinding.ActivityRequestCourierBinding
 import com.example.jiffydeliveryclient.model.AcceptRequestFromCourier
 import com.example.jiffydeliveryclient.model.CourierGeoModel
 import com.example.jiffydeliveryclient.model.DeclineRequestFromCourier
+import com.example.jiffydeliveryclient.model.GeoQueryModel
 import com.example.jiffydeliveryclient.model.Order
 import com.example.jiffydeliveryclient.remote.GoogleAPI
 import com.example.jiffydeliveryclient.remote.RetrofitClient
@@ -45,8 +46,11 @@ import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.gms.maps.model.SquareCap
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.maps.android.ui.IconGenerator
 import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
@@ -92,6 +96,7 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
     private var destinationMarker: Marker? = null
 
     //order info
+    var cityName = ""
     private lateinit var database: FirebaseDatabase
     private lateinit var orderWeight : Spinner
     private lateinit var orderSize: Spinner
@@ -105,6 +110,9 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var courierName : TextView
     private lateinit var expectingTime: TextView
     private lateinit var msgBody: TextView
+    private lateinit var courierKey: String
+    private var marker: Marker? = null
+
 
 
     override fun onStart() {
@@ -150,6 +158,8 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
         courierName.setText(acceptRequestFromCourier!!.firtName+" "+acceptRequestFromCourier!!.lastName)
         expectingTime.setText("Will be there approximately in: "+ acceptRequestFromCourier!!.expectingTime)
         msgBody.setText(acceptRequestFromCourier!!.notificationBody)
+        courierKey = acceptRequestFromCourier?.courierKey!!
+        cityName = acceptRequestFromCourier?.cityName!!
 
     }
 
@@ -181,6 +191,8 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
+
 
     }
 
@@ -391,15 +403,60 @@ class RequestCourierActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 //Tilt
                 val cameraPos = CameraPosition.Builder().target(selectedPlaceEvent!!.origin)
-                    .tilt(45f)
+                    .tilt(0f)
                     .zoom(16f)
                     .build()
 
                 mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPos))
 
+                findViewById<View>(R.id.confirm_pickup_layout).visibility = View.GONE
+                findViewById<View>(R.id.fill_maps).visibility = View.VISIBLE
+                findViewById<View>(R.id.fiding_your_courier_layout).visibility = View.VISIBLE
+
+                startCourierLocationListener(courierKey,cityName)
+
                 //Start animation
-                addMarkerWithPulseAnimation()
+                //addMarkerWithPulseAnimation()
             }
+    }
+
+    private fun startCourierLocationListener(courierKey: String, cityName: String) {
+        val courierLocationReference = FirebaseDatabase.getInstance()
+            .getReference(Constants.COURIERS_LOCATION_REFERENCE)
+            .child(cityName)
+            .child(courierKey)
+
+        courierLocationReference.addValueEventListener(object :ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.hasChildren()){
+                    val geoQueryModel = snapshot.getValue(GeoQueryModel::class.java)
+                    val courierLocation = LatLng(geoQueryModel?.l!![0],geoQueryModel.l!![1])
+                    val cameraUpdateFactory= CameraUpdateFactory.newLatLngZoom(courierLocation,17f)
+
+                    mMap.animateCamera(cameraUpdateFactory)
+                    if (marker == null){
+
+                        Log.d("marker","i am called")
+                        marker = mMap.addMarker(
+                            MarkerOptions()
+                                .position(courierLocation)
+                                .flat(true)
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.scooter25))
+                        )!!
+
+                    }else{
+                        marker!!.position = courierLocation
+                    }
+
+
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+            }
+
+        })
+
     }
 
     private fun addMarkerWithPulseAnimation() {

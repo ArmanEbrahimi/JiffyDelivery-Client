@@ -7,8 +7,11 @@ import android.widget.Toast
 import com.example.jiffydeliveryclient.R
 import com.example.jiffydeliveryclient.model.CourierGeoModel
 import com.example.jiffydeliveryclient.model.Order
-import com.example.jiffydeliveryclient.remote.FCMSendData
+import com.example.jiffydeliveryclient.remote.FCMNotification
 import com.example.jiffydeliveryclient.remote.FCMService
+import com.example.jiffydeliveryclient.remote.GetAccessToken
+import com.example.jiffydeliveryclient.remote.Message
+import com.example.jiffydeliveryclient.remote.Notification
 import com.example.jiffydeliveryclient.remote.RetrofitFCM
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.snackbar.Snackbar
@@ -17,11 +20,10 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.getValue
-import com.google.firebase.database.snapshots
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import retrofit2.HttpException
 
 object UserUtils {
     fun updateUser(
@@ -33,9 +35,10 @@ object UserUtils {
             .child(FirebaseAuth.getInstance().currentUser?.uid!!)
             .updateChildren(updateData)
             .addOnSuccessListener {
-                Snackbar.make(view!!,"Information updated successfully!", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(view!!, "Information updated successfully!", Snackbar.LENGTH_LONG)
+                    .show()
             }.addOnFailureListener { e ->
-                Snackbar.make(view!!,e.message!!, Snackbar.LENGTH_LONG).show()
+                Snackbar.make(view!!, e.message!!, Snackbar.LENGTH_LONG).show()
             }
     }
 
@@ -47,9 +50,12 @@ object UserUtils {
             .getReference(Constants.TOKEN_REFERENCE)
             .child(FirebaseAuth.getInstance().currentUser?.uid!!)
             .setValue(tokenModel)
-            .addOnFailureListener { e -> Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show() }
-            .addOnSuccessListener {  }
+            .addOnFailureListener { e ->
+                Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
+            }
+            .addOnSuccessListener { }
     }
+
     fun sendRequestToDriver(
         context: Context,
         main_layout: View?,
@@ -60,6 +66,7 @@ object UserUtils {
     ) {
         val compositeDisposable = CompositeDisposable()
         val fcmService = RetrofitFCM.instance!!.create(FCMService::class.java)
+        Log.d("send request to driver", "i am called")
         //Get token
         FirebaseDatabase.getInstance()
             .getReference(Constants.TOKEN_REFERENCE)
@@ -67,14 +74,17 @@ object UserUtils {
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (snapshot.exists()) {
-                        Log.d("tokenmodel",snapshot.getValue().toString())
+                        Log.d("tokenmodel", snapshot.getValue().toString())
                         //val tokenModel = snapshot.getValue(TokenModel::class.java)
 
 
                         val notificationData: MutableMap<String, String> = HashMap()
                         notificationData.put(Constants.NOTI_TITLE, Constants.REQUEST_COURIER_TITLE)
                         notificationData.put(Constants.NOTI_BODY, "This is the notification body")
-                        notificationData.put(Constants.CLIENT_KEY,FirebaseAuth.getInstance().currentUser!!.uid)
+                        notificationData.put(
+                            Constants.CLIENT_KEY,
+                            FirebaseAuth.getInstance().currentUser!!.uid
+                        )
                         notificationData.put(
                             Constants.PICKUP_LOCATION,
                             StringBuilder()
@@ -83,26 +93,65 @@ object UserUtils {
                                 .append(target.longitude)
                                 .toString()
                         )
-                        notificationData.put(Constants.ORDER_WEIGHT,order.weight)
-                        notificationData.put(Constants.ORDER_SIZE,order.size)
-                        notificationData.put(Constants.DURATION,duration)
-                        notificationData.put(Constants.COURIER_KEY,foundCourier.key!!)
+                        notificationData.put(Constants.ORDER_WEIGHT, order.weight)
+                        notificationData.put(Constants.ORDER_SIZE, order.size)
+                        notificationData.put(Constants.DURATION, duration)
+                        notificationData.put(Constants.COURIER_KEY, foundCourier.key!!)
 
-                        val fcmSendData = FCMSendData(snapshot.getValue().toString(), notificationData,order)
+//
+                        val token =
+                            "e8vZBonoRHCVUiYcvsUBUW:APA91bGAURlO9PPcVhlSpsQK2G_9Kcco9OZ4xY3RvRkLX5WpWo1IXDZsu9sujJMJo64A01Nuh1b6iNeHaA84_BsFv-L0m04SgGoWosHgnnQIJrOx5TFeB46XlN0NpS_rySHLpzd-owaV"
+//
+                        val notification = Notification(Constants.REQUEST_COURIER_TITLE, "body")
+                        val data : MutableMap<String,String> = HashMap()
+                        data.put(Constants.NOTI_BODY, "This is the notification body")
+                        data.put(
+                            Constants.CLIENT_KEY,
+                            FirebaseAuth.getInstance().currentUser!!.uid
+                        )
+                        data.put(
+                            Constants.PICKUP_LOCATION,
+                            StringBuilder()
+                                .append(target.latitude)
+                                .append(",")
+                                .append(target.longitude)
+                                .toString()
+                        )
+                        data.put(Constants.ORDER_WEIGHT, order.weight)
+                        data.put(Constants.ORDER_SIZE, order.size)
+                        data.put(Constants.DURATION, duration)
+                        data.put(Constants.COURIER_KEY, foundCourier.key!!)
+                        val message = Message(token, notification,data)
+                        val fcmNotification = FCMNotification(message)
 
-                        compositeDisposable.add(fcmService.sendNotification(fcmSendData)
+
+                        val accessToken = "Bearer " + GetAccessToken().getAccessToke()
+                        Log.d("accesstoken", accessToken)
+                        compositeDisposable.add(fcmService.sendNotification(
+                            accessToken, fcmNotification
+                        )
                             .subscribeOn(Schedulers.newThread())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe({ fcmResponse ->
                                 if (fcmResponse.success == 0) {
                                     compositeDisposable.clear()
-                                    Snackbar.make(main_layout!!,context.getString(R.string.send_request_to_courier_failed),
-                                        Snackbar.LENGTH_LONG).show()
+                                    Snackbar.make(
+                                        main_layout!!,
+                                        context.getString(R.string.send_request_to_courier_failed),
+                                        Snackbar.LENGTH_LONG
+                                    ).show()
                                 }
                             },
                                 { t: Throwable? ->
                                     compositeDisposable.clear()
-                                    Snackbar.make(main_layout!!, t!!.message!!,Snackbar.LENGTH_LONG).show()
+                                    Log.d("wrong address", t!!.message.toString())
+//                                    Snackbar.make(main_layout!!, t!!.message!!,Snackbar.LENGTH_LONG).show()
+                                    if (t is HttpException) {
+                                        val errorBody = t.response()?.errorBody()?.string()
+                                        println("Error: $errorBody")
+                                    } else {
+                                        println("Error: ${t!!.message}")
+                                    }
                                 }
                             ))
 

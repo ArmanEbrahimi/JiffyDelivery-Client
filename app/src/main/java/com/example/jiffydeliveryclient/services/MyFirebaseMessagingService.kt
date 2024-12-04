@@ -28,28 +28,29 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         super.onMessageReceived(message)
 
             val data = message.data
+            val notification = message.notification
 
-            if (data[Constants.NOTI_TITLE].equals(Constants.REQUEST_COURIER_DECLINED)) {
+            if (notification!!.title.equals(Constants.REQUEST_COURIER_DECLINED)) {
                 EventBus.getDefault().postSticky(DeclineRequestFromCourier())
                 Constants.showNotification(
                     this, kotlin.random.Random.nextInt(),
-                    data[Constants.NOTI_TITLE],
-                    data[Constants.NOTI_BODY],
+                    notification.title,
+                    notification.body,
                     null
                 )
 
             }
 
-        if (data[Constants.NOTI_TITLE].equals(Constants.REQUEST_ACCEPTED)){
-            EventBus.getDefault().postSticky(AcceptRequestFromCourier(data[Constants.NOTI_TITLE],
-                data[Constants.NOTI_BODY],
+        if (notification.title.equals(Constants.REQUEST_ACCEPTED)){
+            EventBus.getDefault().postSticky(AcceptRequestFromCourier(notification.title,
+                notification.body,
                 data[Constants.COURIER_KEY],
                 data[Constants.ESTIMATED_TIME],
                 data[Constants.AVATAR_IMAGE],
                 data[Constants.FIRST_NAME],
                 data[Constants.LAST_NAME],
-                data[Constants.ESTIMATED_TIME]))
-
+                data[Constants.ESTIMATED_TIME],
+                data[Constants.CITY]))
         }
 
     }

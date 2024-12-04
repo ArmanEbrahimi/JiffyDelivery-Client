@@ -8,6 +8,7 @@ class AcceptRequestFromCourier(
     var avatarImage: String?,
     var firtName: String?,
     var lastName: String?,
-    var expectingTime: String?
+    var expectingTime: String?,
+    var cityName: String?
 ) {
 }
