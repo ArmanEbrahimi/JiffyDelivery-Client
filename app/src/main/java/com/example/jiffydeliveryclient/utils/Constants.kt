@@ -26,6 +26,7 @@ object Constants{
         return StringBuilder(firstName).append(" ").append(lastName).toString()
     }
 
+    val CITY: String = "City"
     val LAST_NAME: String = "LastName"
     val FIRST_NAME: String = "FirstName"
     val AVATAR_IMAGE: String = "AvatarImage"

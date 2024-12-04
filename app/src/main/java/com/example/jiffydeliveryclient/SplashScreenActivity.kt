@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.StrictMode
 import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,6 +16,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import com.example.jiffydeliveryclient.model.ClientModel
+import com.example.jiffydeliveryclient.remote.GetAccessToken
 import com.example.jiffydeliveryclient.ui.HomeActivity
 import com.example.jiffydeliveryclient.utils.Constants
 import com.example.jiffydeliveryclient.utils.UserUtils
@@ -48,6 +50,9 @@ class SplashScreenActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash_screen)
+
+        val policy:StrictMode.ThreadPolicy= StrictMode.ThreadPolicy.Builder().permitAll().build()
+        StrictMode.setThreadPolicy(policy)
 
         init()
 
